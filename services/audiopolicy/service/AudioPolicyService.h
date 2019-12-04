@@ -262,9 +262,6 @@ public:
             status_t doStopOutput(audio_port_handle_t portId);
             void doReleaseOutput(audio_port_handle_t portId);
 
-    virtual status_t listAudioSessions(audio_stream_type_t stream,
-                                       Vector< sp<AudioSessionInfo>>& sessions);
-
             status_t clientCreateAudioPatch(const struct audio_patch *patch,
                                       audio_patch_handle_t *handle,
                                       int delayMs);
@@ -303,9 +300,6 @@ public:
             void setEffectSuspended(int effectId,
                                     audio_session_t sessionId,
                                     bool suspended);
-
-            void onOutputSessionEffectsUpdate(sp<AudioSessionInfo>& info, bool added);
-            void doOnOutputSessionEffectsUpdate(sp<AudioSessionInfo>& info, bool added);
 
 private:
                         AudioPolicyService() ANDROID_API;
@@ -447,7 +441,6 @@ private:
             DYN_POLICY_MIX_STATE_UPDATE,
             RECORDING_CONFIGURATION_UPDATE,
             SET_EFFECT_SUSPENDED,
-            EFFECT_SESSION_UPDATE,
         };
 
         AudioCommandThread (String8 name, const wp<AudioPolicyService>& service);
@@ -495,8 +488,6 @@ private:
                                                           audio_session_t sessionId,
                                                           bool suspended);
                     void        insertCommand_l(AudioCommand *command, int delayMs = 0);
-                    void        effectSessionUpdateCommand(sp<AudioSessionInfo>& info, bool added);
-
     private:
         class AudioCommandData;
 
@@ -603,12 +594,6 @@ private:
             int mEffectId;
             audio_session_t mSessionId;
             bool mSuspended;
-        };
-
-        class EffectSessionUpdateData : public AudioCommandData {
-        public:
-            sp<AudioSessionInfo> mAudioSessionInfo;
-            bool mAdded;
         };
 
         Mutex   mLock;
@@ -728,8 +713,6 @@ private:
 
         virtual audio_unique_id_t newAudioUniqueId(audio_unique_id_use_t use);
 
-        virtual void onOutputSessionEffectsUpdate(sp<AudioSessionInfo>& info, bool added);
-
      private:
         AudioPolicyService *mAudioPolicyService;
     };
@@ -758,8 +741,6 @@ private:
                                                     audio_source_t source);
                             void      setAudioPortCallbacksEnabled(bool enabled);
                             void setAudioVolumeGroupCallbacksEnabled(bool enabled);
-                            void      onOutputSessionEffectsUpdate(sp<AudioSessionInfo>& info,
-                                                                   bool added);
 
                             uid_t uid() {
                                 return mUid;
